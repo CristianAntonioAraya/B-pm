@@ -12,6 +12,6 @@ const app = express();
     app.use(express.json());
 //routes
     app.use('/api/users' , require('./routes/UserRoutes'));
-    // app.use('/api/:userId/:audioId' , require('./routes/AudioRoutes'));
+    app.use('/api/songs' , require('./routes/SongRoutes'));
 
 module.exports = app;

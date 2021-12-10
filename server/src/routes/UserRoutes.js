@@ -1,5 +1,6 @@
 const {Router} = require('express');
-const { createUser, getAllUsers, deleteUser, userLogin } = require('../controllers/UserController');
+const { createUser, getAllUsers, deleteUser, userLogin, revalidateToken, getSingleUser } = require('../controllers/UserController');
+const { validateJwt } = require('../services/ValidateJwt');
 const router = Router();
 
 router.route('/')
@@ -11,7 +12,9 @@ router.route('/new')
 
 router.route('/:id')
     .delete(deleteUser)
-//     .get(getUser)
-//     .put(updateUser)
-    
+    .get(getSingleUser)
+
+router.route('/renew')
+    .get(validateJwt , revalidateToken)
+
 module.exports = router;

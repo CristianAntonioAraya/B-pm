@@ -1,10 +1,45 @@
 const UserModel = require('../models/UserModel')
 const bcrypt = require('bcryptjs')
+const {generateJwt} = require('../services/Jwt')
 
 const getAllUsers = async (req, res) => {
     //Find in the userModel collection all objects and send in json format
     const allUser = await UserModel.find();
     res.json(allUser)
+}
+
+const getSingleUser = async (req, res ) => {
+    try {
+        //get Id provided in the url of the post
+        const { id } = req.params;
+    
+        //Search in the collection the user with the id
+        const user = await UserModel.findById(id);
+
+        // if theres not user with this id, return bad request
+        if(!user){
+            return res.status(400).json({
+                ok: false,
+                msg: 'User dont exists'
+            })
+        }
+
+        const {displayName, email, _id} = user;
+        
+        res.status(200).json({
+            ok: true,
+            _id,
+            displayName,
+            email
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(400).json({
+            ok: false,
+            msg: 'Bad request'
+            
+        })
+    }
 }
 
 const createUser = async ( req, res ) => {
@@ -35,10 +70,18 @@ const createUser = async ( req, res ) => {
         //save in data base   
 
         await newUser.save()
+
+        //Generate Json Web token
+
+        const token  = await generateJwt(newUser.id, newUser.displayName)
+
         res.status(200).json({
             ok: true,
             status: 200,
-            msg: "User Created correctly"
+            msg: "User Created correctly",
+            displayName: newUser.displayName ,
+            id: newUser.id,
+            token
         })
         
     } catch (error) {
@@ -46,7 +89,7 @@ const createUser = async ( req, res ) => {
         res.status(500).json({ // status 500 internal server error
             ok: false,
             status: 500,
-            msg: "Error was ocurred"
+            msg: "Error was ocurred Creating user"
         })
     }
 }
@@ -55,6 +98,7 @@ const deleteUser = async ( req , res) => {
     try {
         //Search in user collection by the id provided by the client and delete the document
         await UserModel.findByIdAndDelete(req.params.id)
+        console.log(req.params)
         res.status(200).json({
             ok: true,
             status: 200,
@@ -101,10 +145,16 @@ const userLogin  = async (req, res) => {
         })
     }
     //Generate JWT
+
+    const token  = await generateJwt(user.id, user.displayName);
+
     res.status(200).json({
         ok: true,
         status: 200,
-        msg: "User login correctly"
+        msg: "User login correctly",
+        displayName: user.displayName ,
+        id: user.id,
+        token
     })
     } catch (error) {
         console.log(error)
@@ -117,4 +167,22 @@ const userLogin  = async (req, res) => {
     }
 }
 
-module.exports = {createUser, getAllUsers, deleteUser,userLogin};
+const revalidateToken = async(req, res) => {
+
+    //Both values are set in validatejwt function, in services folder
+    const { id , displayName} = req;
+
+    //New jwt
+    const token  = await generateJwt(id, displayName);
+
+    res.status(200).json({
+        ok: true,
+        msg: 'renew token',
+        displayName,
+        id,
+        token
+    })
+}
+
+
+module.exports = {createUser, getAllUsers, deleteUser, userLogin, revalidateToken , getSingleUser};
