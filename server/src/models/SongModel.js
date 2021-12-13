@@ -5,6 +5,11 @@ const songShema = new Schema({
         type: String,
         trim: true,
         required: true
+    },
+    owner: {
+        type: Schema.Types.ObjectId,
+        ref: 'user',
+        required: true
     }
 }, {
     timestamps: true

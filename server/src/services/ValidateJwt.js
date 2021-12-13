@@ -14,7 +14,7 @@ const validateJwt = ( req, res, next ) => {
     }
     try {
         const {id , displayName} = jwt.verify(token, process.env.SECRET_JWT_SEED)
-
+        
         //Change the value of the request params to make accesible in eache place that we call the validatejwt funtion
         req.id = id;
         req.displayName = displayName;
